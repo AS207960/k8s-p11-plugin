@@ -1,0 +1,23 @@
+[package]
+name = "k8s-p11-plugin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+log = "0.4"
+tonic = "0.6"
+clap = "3"
+pretty_env_logger = "0.4"
+systemd-journal-logger = "0"
+serde_yaml = "0.8"
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "process", "io-util"] }
+ctrlc = "3"
+uuid = { version = "0.8", features = ["v4"] }
+serde = "1"
+prost = "0.9"
+futures-util = "0.3"
+futures = "0.3"
+tower-service = "0.3"
+
+[build-dependencies]
+tonic-build = "0.6"

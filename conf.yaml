@@ -1,0 +1,7 @@
+p11_kit_binary: /usr/bin/p11-kit
+hsm_types:
+  - name: test
+    tokens:
+      - "pkcs11:model=YubiKey%20YK5;manufacturer=Yubico%20%28www.yubico.com%29;serial=17040761;token=YubiKey%20PIV%20%2317040761"
+    max_clients: 10
+    provider: /usr/lib/x86_64-linux-gnu/libykcs11.so    
