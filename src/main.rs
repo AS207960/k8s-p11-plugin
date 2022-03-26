@@ -273,6 +273,7 @@ impl proto::device_plugin_server::DevicePlugin for DevicePlugin {
         &self,
         _request: tonic::Request<proto::Empty>,
     ) -> Result<tonic::Response<proto::DevicePluginOptions>, tonic::Status> {
+        debug!("Got device plugin options request");
         Ok(tonic::Response::new(proto::DevicePluginOptions {
             pre_start_required: false,
             get_preferred_allocation_available: false,
@@ -283,6 +284,7 @@ impl proto::device_plugin_server::DevicePlugin for DevicePlugin {
         &self,
         _request: tonic::Request<proto::Empty>,
     ) -> Result<tonic::Response<Self::ListAndWatchStream>, tonic::Status> {
+        debug!("Got list and watch request");
         let devices = self.state.ids.iter().map(|id| {
             proto::Device {
                 id: id.to_string(),
@@ -301,6 +303,7 @@ impl proto::device_plugin_server::DevicePlugin for DevicePlugin {
         request: tonic::Request<proto::AllocateRequest>,
     ) -> Result<tonic::Response<proto::AllocateResponse>, tonic::Status> {
         let msg = request.into_inner();
+        debug!("Got allocate request: {:?}", msg);
         let resps = msg.container_requests.into_iter().map(|r| {
             for d in r.devices_ids {
                 let id = match uuid::Uuid::parse_str(&d) {
