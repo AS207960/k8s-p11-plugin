@@ -102,6 +102,7 @@ async fn main() {
     let should_exit_ctrlc = should_exit.clone();
     let should_exit_register = should_exit.clone();
     ctrlc::set_handler(move || {
+        info!("Exiting...");
         should_exit_ctrlc.store(true, std::sync::atomic::Ordering::Relaxed);
         request_stop_send_ctrlc.send(()).unwrap();
     }).expect("Error setting Ctrl-C handler");
