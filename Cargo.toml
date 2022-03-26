@@ -21,3 +21,6 @@ tower-service = "0.3"
 
 [build-dependencies]
 tonic-build = "0.6"
+
+[patch.crates-io]
+h2 = { git = "https://github.com/AS207960/h2", rev = "fec9168c67b00be7fd36dff80a110a88675b088e" }

@@ -358,6 +358,7 @@ impl futures_util::stream::Stream for ListDevices {
         let this = self.get_mut();
         if !this.sent {
             this.sent = true;
+            debug!("Sending device list");
             std::task::Poll::Ready(Some(Ok(proto::ListAndWatchResponse {
                 devices: this.devices.clone(),
             })))
