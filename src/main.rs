@@ -100,6 +100,7 @@ async fn main() {
     let (request_stop_send, mut request_stop_recv) = tokio::sync::mpsc::unbounded_channel();
     let request_stop_send_ctrlc = request_stop_send.clone();
     let should_exit_ctrlc = should_exit.clone();
+    let should_exit_register = should_exit.clone();
     ctrlc::set_handler(move || {
         should_exit_ctrlc.store(true, std::sync::atomic::Ordering::Relaxed);
         request_stop_send_ctrlc.send(()).unwrap();
@@ -109,7 +110,7 @@ async fn main() {
 
     let register_config = config.clone();
     tokio::spawn(async move {
-        register_plugin(register_recv, register_config).await;
+        register_plugin(register_recv, register_config, should_exit_register).await;
     });
 
     let mut check_interval = tokio::time::interval(tokio::time::Duration::from_secs(2));
@@ -158,15 +159,22 @@ async fn main() {
     }
 }
 
-async fn register_plugin(mut msg_chan: tokio::sync::mpsc::Receiver<()>, config: std::sync::Arc<Config>) {
+async fn register_plugin(
+    mut msg_chan: tokio::sync::mpsc::Receiver<()>, config: std::sync::Arc<Config>,
+    should_exit: std::sync::Arc<std::sync::atomic::AtomicBool>
+) {
     while let Some(_) = msg_chan.recv().await {
-        let sock = uds::UnixStream::connect("/var/lib/kubelet/device-plugins/kubelet.sock").await;
+        let sock = uds::UnixStream::connect("/var/lib/kubelet/device-plugins/kubelet.sock");
         let endpoint = tonic::transport::Endpoint::from_static("unix://null");
         let channel = match endpoint.connect_with_connector(sock).await {
             Ok(c) => c,
             Err(e) => {
                 error!("Unable to connect to kubelet socket: {}", e);
-                continue;
+                if should_exit.load(std::sync::atomic::Ordering::Relaxed) {
+                    break;
+                } else {
+                    continue;
+                }
             }
         };
         let mut client = proto::registration_client::RegistrationClient::new(channel);
