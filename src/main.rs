@@ -54,12 +54,14 @@ impl From<&HSMType> for AppState {
 }
 
 struct DevicePlugin {
-    state: std::sync::Arc<AppState>
+    state: std::sync::Arc<AppState>,
+    should_exit: std::sync::Arc<std::sync::atomic::AtomicBool>
 }
 
 struct ListDevices {
     devices: Vec<proto::Device>,
-    sent: bool
+    sent: bool,
+    should_exit: std::sync::Arc<std::sync::atomic::AtomicBool>
 }
 
 #[tokio::main]
@@ -140,12 +142,13 @@ async fn main() {
     });
 
     'outer: loop {
-        for (hsm_type, sock_path) in std::iter::zip(app_states.iter(), self_socks.iter()) {
+        for (hsm_type, sock_path) in itertools::zip(app_states.iter(), self_socks.iter()) {
             let listener = uds::DeleteOnDrop::bind(sock_path).expect("Unable to create service socket");
             let _ = register_send.send(()).await;
 
             let svc = DevicePlugin {
-                state: hsm_type.clone()
+                state: hsm_type.clone(),
+                should_exit: should_exit.clone()
             };
             let (stop_send, stop_recv) = tokio::sync::oneshot::channel::<()>();
             stops_send.send(stop_send).unwrap();
@@ -294,7 +297,8 @@ impl proto::device_plugin_server::DevicePlugin for DevicePlugin {
         }).collect();
         Ok(tonic::Response::new(Box::pin(ListDevices {
             devices,
-            sent: false
+            sent: false,
+            should_exit: self.should_exit.clone(),
         })))
     }
 
@@ -363,7 +367,11 @@ impl futures_util::stream::Stream for ListDevices {
                 devices: this.devices.clone(),
             })))
         } else {
-            std::task::Poll::Pending
+            if this.should_exit.load(std::sync::atomic::Ordering::Relaxed) {
+                std::task::Poll::Ready(None)
+            } else {
+                std::task::Poll::Pending
+            }
         }
     }
 }

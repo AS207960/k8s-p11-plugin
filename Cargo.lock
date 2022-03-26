@@ -492,6 +492,7 @@ dependencies = [
  "ctrlc",
  "futures",
  "futures-util",
+ "itertools",
  "log",
  "pretty_env_logger",
  "prost",
