@@ -138,7 +138,7 @@ async fn main() {
         }
     });
 
-    loop {
+    'outer: loop {
         for (hsm_type, sock_path) in std::iter::zip(app_states.iter(), self_socks.iter()) {
             let listener = uds::DeleteOnDrop::bind(sock_path).expect("Unable to create service socket");
             let _ = register_send.send(()).await;
@@ -154,7 +154,7 @@ async fn main() {
                 .await
                 .unwrap();
             if should_exit.load(std::sync::atomic::Ordering::Relaxed) {
-                break
+                break 'outer;
             }
         }
     }
