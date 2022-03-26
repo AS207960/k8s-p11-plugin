@@ -111,6 +111,7 @@ async fn main() {
 
     let register_config = config.clone();
     tokio::spawn(async move {
+        tokio::time::sleep(std::time::Duration::from_secs(5));
         register_plugin(register_recv, register_config, should_exit_register).await;
     });
 
