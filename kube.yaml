@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p11-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: p11-test
+  template:
+    metadata:
+      annotations:
+        cni.projectcalico.org/ipv6pools: "[\"default-ipv6-ippool\"]"
+      labels:
+        app: p11-test
+    spec:
+      containers:
+        - name: p11-test
+          image: theenbyperor/p11-test:2
+          resources:
+            limits:
+              hsm.as207960.net/esigner: 1

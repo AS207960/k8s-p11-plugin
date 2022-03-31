@@ -324,12 +324,13 @@ impl proto::device_plugin_server::DevicePlugin for DevicePlugin {
                 envs: std::collections::HashMap::from([
                     ("P11_KIT_SERVER_ADDRESS".to_string(), format!("unix:path={}", container_path))
                 ]),
-                mounts: vec![],
+                devices: vec![],
                 annotations: std::collections::HashMap::new(),
-                devices: vec![proto::DeviceSpec {
+                mounts: vec![proto::Mount {
                     container_path,
                     host_path: self.state.p11_sock_path.to_string_lossy().to_string(),
-                    permissions: "rw".to_string(),
+                    // permissions: "rw".to_string(),
+                    read_only: false,
                 }],
             })
         }).collect::<Result<Vec<_>, tonic::Status>>()?;
