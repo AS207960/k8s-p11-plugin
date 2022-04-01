@@ -17,6 +17,9 @@ spec:
       containers:
         - name: p11-test
           image: theenbyperor/p11-test:2
+          command: ["bash"]
+          tty: true
+          stdin: true
           resources:
             limits:
               hsm.as207960.net/esigner: 1
